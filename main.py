@@ -7,8 +7,7 @@ class Test(BaseModel):
     name: str
     age: int
 
-
-@app.get('/')
-def test(t:Test):
+@app.post('/')
+def test(t: Test):
     print(t)
-    return 'hello World' 
+    return {"message": "hello World"}
