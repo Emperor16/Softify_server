@@ -2,20 +2,22 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column,TEXT, create_engine
+from sqlalchemy import Column, TEXT, VARCHAR, LargeBinary, create_engine
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = FastAPI()
 
-create_engine()
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-DATABASE_URL= 'DB_URL'
+engine = create_engine(DATABASE_URL)
 
-engine = create_engine(DATABASE_URL) 
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+db = SessionLocal()
 
-sessionLocal = sessionmaker(autocommit = False, autoflaush= False, bind=engine)
-db = sessionLocal()
-
-class userCreate (BaseM odel):
+class UserCreate(BaseModel):
     name: str
     email: str
     password: str
@@ -24,16 +26,16 @@ Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(TEXT, primary_key= True)
-    name = Column (VARCHAR(100))
+    id = Column(TEXT, primary_key=True)
+    name = Column(VARCHAR(100))
     email = Column(VARCHAR(100))
-    password= Column(LargeBinary)
+    password = Column(LargeBinary)
 
-@app.post ('/sigup')
-def signupUser(user: userCreate):
-    print (user.name)
+@app.post("/signup")
+def signup_user(user: UserCreate):
+    print(user.name)
     print(user.email)
-    print (user.password)
-    #extract inputs from the user
+    print(user.password)
+    return {"message": "received"}
 
-    pass
+Base.metadata.create_all(bind=engine)
