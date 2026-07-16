@@ -36,5 +36,9 @@ def signup_user(user: UserCreate, db:Session= Depends(get_db)):
     "id": new_user.id, 
     "name": new_user.name,
     "email": new_user.email,
-    "password": new_user.password.decode()  # hashed password as string
+    "password": new_user.password.decode()
 }
+
+@router.post ('/login')
+def login_user():
+    pass
