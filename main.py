@@ -5,6 +5,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, VARCHAR, LargeBinary, create_engine
 from dotenv import load_dotenv
 import os
+import uuid
+import bcrypt
 
 load_dotenv()
 
@@ -13,6 +15,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 Base = declarative_base()
 
@@ -33,12 +36,16 @@ app = FastAPI()
 @app.post("/signup")
 def signup_user(user: UserCreate):
     db = SessionLocal()
-    hashed_password = user.password.encode()
+    user_db= db.query(User).filter(User.email == user.email).first()
+
+    if not user_db:
+        return "User with the same email already exists" #coming latter
+
+    hashed_password = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt())
+    user_db = User(id=int(uuid.uuid4()), email= user.email, password= password.hashed, name= user.name)
+    db.add(user_db)
     new_user = User(name=user.name, email=user.email, password=hashed_password)
-    db.add(new_user)
     db.commit()
-    db.refresh(new_user)
-    db.close()
     return {"message": "user created", "id": new_user.id}
 
 Base.metadata.create_all(bind=engine)
