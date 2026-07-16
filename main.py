@@ -37,7 +37,6 @@ def signup_user(user: UserCreate):
     db = SessionLocal()
     user_db = db.query(User).filter(User.email == user.email).first()
 
-    # FIXED: correct HTTPException usage
     if user_db:
         db.close()
         raise HTTPException(status_code=400, detail="User with the same email already exists")
@@ -57,6 +56,13 @@ def signup_user(user: UserCreate):
     db.refresh(new_user)
     db.close()
 
-    return {"message": "user created", "id": new_user.id}
+    return {
+    "message": "user created",
+    "id": new_user.id,
+    "name": new_user.name,
+    "email": new_user.email,
+    "password": new_user.password.decode()  # hashed password as string
+}
+
 
 Base.metadata.create_all(bind=engine)
