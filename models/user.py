@@ -1,5 +1,5 @@
 from models.base import Base
-from Sqlalchemy import Column, TEXT, VARCHAR, LargeBinary
+from sqlalchemy import Column, VARCHAR, LargeBinary
 
 
 class User(Base):
