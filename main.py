@@ -1,13 +1,12 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
 
-app = FastAPI()
+from models.base import Base
+from database import engine
+from routes import auth
 
-class Test(BaseModel):
-    name: str
-    age: int
+app= FastAPI()
 
-@app.post('/')
-def test(t: Test):
-    print(t)
-    return {"message": "hello World"}
+app.include_router(auth.router, prefix= '/auth')
+
+Base.metadata.create_all(bind=engine)
+  
