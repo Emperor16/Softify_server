@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 import bcrypt
 from models.user import User
 from pydantic_schemas.user_create import UserCreate
+from pydantic_schemas.user_login import userLogin
 from sqlalchemcy import Session
 from database import get_db
 import uuid
@@ -40,5 +41,5 @@ def signup_user(user: UserCreate, db:Session= Depends(get_db)):
 }
 
 @router.post ('/login')
-def login_user():
+def login_user(User: userLogin):
     pass
