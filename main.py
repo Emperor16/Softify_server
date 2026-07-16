@@ -2,40 +2,43 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, TEXT, VARCHAR, LargeBinary, create_engine
+from sqlalchemy import Column, Integer, VARCHAR, LargeBinary, create_engine
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
-
-app = FastAPI()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-db = SessionLocal()
+
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(VARCHAR(100))
+    email = Column(VARCHAR(100))
+    password = Column(LargeBinary)
 
 class UserCreate(BaseModel):
     name: str
     email: str
     password: str
 
-Base = declarative_base()
-
-class User(Base):
-    __tablename__ = "users"
-    id = Column(TEXT, primary_key=True)
-    name = Column(VARCHAR(100))
-    email = Column(VARCHAR(100))
-    password = Column(LargeBinary)
+app = FastAPI()
 
 @app.post("/signup")
 def signup_user(user: UserCreate):
-    print(user.name)
-    print(user.email)
-    print(user.password)
-    return {"message": "received"}
+    db = SessionLocal()
+    hashed_password = user.password.encode()
+    new_user = User(name=user.name, email=user.email, password=hashed_password)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    db.close()
+    return {"message": "user created", "id": new_user.id}
 
 Base.metadata.create_all(bind=engine)
