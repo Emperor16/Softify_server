@@ -1,6 +1,7 @@
 from database import SessionLocal
 from fastapi import APIRouter, HTTPException
 import bcrypt
+from models import user
 from models.user import User
 from pydantic_schemas.user_create import UserCreate
 from pydantic_schemas.user_login import userLogin
@@ -41,5 +42,15 @@ def signup_user(user: UserCreate, db:Session= Depends(get_db)):
 }
 
 @router.post ('/login')
-def login_user(User: userLogin):
-    pass
+def login_user(User: userLogin, db:Session= Depends(get_db)):
+    #if user with the same email already exists in my db
+    user_db =db.query(User).filter(User.email == user.email).first()
+
+    if not user_db:
+        raise HTTPException(400, 'User with this email is not found')
+    #if password mataching or not
+    user_password = bcrypt.checkpw(user.password.encode(), user_db.password)
+
+    if not user_password:
+        raise HTTPException(400, "Incorrect password")
+    return user_db
