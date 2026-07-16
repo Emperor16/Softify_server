@@ -3,13 +3,13 @@ from fastapi import APIRouter, HTTPException
 import bcrypt
 from models.user import User
 from pydantic_schemas.user_create import UserCreate
-from sqlalchemcy import session
+from sqlalchemcy import Session
 from database import get_db
 import uuid
 router = APIRouter()
 
 @router.post("/signup")
-def signup_user(user: UserCreate, db:session= Depends(get_db)):
+def signup_user(user: UserCreate, db:Session= Depends(get_db)):
     user_db = db.query(User).filter(User.email == user.email).first()
 
     if user_db:
