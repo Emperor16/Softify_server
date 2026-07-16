@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -37,16 +37,13 @@ def signup_user(user: UserCreate):
     db = SessionLocal()
     user_db = db.query(User).filter(User.email == user.email).first()
 
-    # FIX 1 — your logic was reversed
+    # FIXED: correct exception class + correct logic
     if user_db:
         db.close()
-        return "User with the same email already exists"
+        raise HTTPException(400,"User with the same email already exists")
 
-    # Hash password
     hashed_password = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt())
 
-    # FIX 2 — uuid cannot be converted to int
-    # FIX 3 — password.hashed does not exist
     new_user = User(
         name=user.name,
         email=user.email,
@@ -56,6 +53,7 @@ def signup_user(user: UserCreate):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    db.close()
 
     return {"message": "user created", "id": new_user.id}
 
